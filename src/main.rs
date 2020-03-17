@@ -8,6 +8,11 @@ fn main() {
     start();
 }
 
+const RESET: &str = "\x1b[0m";
+const RED: &str = "\x1b[0;41m";
+const GREEN: &str = "\x1b[0;32m";
+const YELLOW: &str = "\x1b[0;33m";
+
 pub fn start() {
     let quotes = ["Nothing is so difficult as not deceiving oneself.",
     "Talent is cheaper than table salt. What separates the talented individual from the successful one is a lot of hard work.",
@@ -20,23 +25,20 @@ pub fn start() {
     let mut match_chars: Vec<bool> = Vec::new();
     let mut char_index: i32 = -1;
 
-    let reset = "\x1b[0m";
-    let red = "\x1b[0;31m";
-    let green = "\x1b[0;32m";
-    let yellow = "\x1b[0;33m";
     let mut temp_colored_string = String::new();
-    let mut index = 0;
-
+    temp_colored_string.push_str(YELLOW);
+    // let mut index = 0;
     for ch in sample_text.chars() {
         chars.push(ch);
         temp_colored_string.push(ch);
-        if index & 4 == 0 {
-            temp_colored_string.push_str(red);
-        } else {
-            temp_colored_string.push_str(green);
-        }
-        index += 1;
+    //     if index & 4 == 0 {
+    //         temp_colored_string.push_str(RED);
+    //     } else {
+    //         temp_colored_string.push_str(GREEN);
+    //     }
+    //     index += 1;
     }
+    temp_colored_string.push_str(RESET);
 
     let term = console::Term::stdout();
     let mut input = String::from("_");
@@ -79,12 +81,13 @@ pub fn start() {
         let asd: Vec<(&char, &bool)> = input_chars.iter().zip(match_chars.iter()).collect();
         for (a, b) in asd {
             if *b {
-                input_temp.push_str(green);
+                input_temp.push_str(GREEN);
             } else {
-                input_temp.push_str(red);
+                input_temp.push_str(RED);
             }
             input_temp.push(*a);
         }
+        input_temp.push_str(RESET);
         term.move_cursor_up(1)
             .expect("Error while moving cursor up");
         term.clear_line().expect("Error while clearing line");
@@ -109,5 +112,5 @@ pub fn start() {
     println!("\x1b[33mThis is colored text.");
     println!("This is colored text.\x1b[0m");
     let cyan = Style::new().cyan();
-    println!("This is {} neat", cyan.apply_to("quite"));
+    println!("This is {} neat", cyan.reverse().apply_to("quite"));
 }
