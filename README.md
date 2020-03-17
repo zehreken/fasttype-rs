@@ -1,0 +1,1 @@
+A typing game in the comfort of your terminal.
