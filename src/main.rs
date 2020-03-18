@@ -2,18 +2,25 @@ use console::style;
 use console::Key;
 use console::Style;
 use rand::Rng;
-
-fn main() {
-    println!("Hello, world!");
-    start();
-}
+use std::time::{Duration, Instant};
 
 const RESET: &str = "\x1b[0m";
 const RED: &str = "\x1b[0;41m";
 const GREEN: &str = "\x1b[0;32m";
 const YELLOW: &str = "\x1b[0;33m";
 
-pub fn start() {
+fn main() {
+    println!("Hello, world!");
+    start();
+}
+
+fn new_round() {
+
+}
+
+fn start() {
+    let mut now = Instant::now();
+
     let quotes = ["Nothing is so difficult as not deceiving oneself.",
     "Talent is cheaper than table salt. What separates the talented individual from the successful one is a lot of hard work.",
     "The harder you work, the luckier you get.",
@@ -31,12 +38,12 @@ pub fn start() {
     for ch in sample_text.chars() {
         chars.push(ch);
         temp_colored_string.push(ch);
-    //     if index & 4 == 0 {
-    //         temp_colored_string.push_str(RED);
-    //     } else {
-    //         temp_colored_string.push_str(GREEN);
-    //     }
-    //     index += 1;
+        //     if index & 4 == 0 {
+        //         temp_colored_string.push_str(RED);
+        //     } else {
+        //         temp_colored_string.push_str(GREEN);
+        //     }
+        //     index += 1;
     }
     temp_colored_string.push_str(RESET);
 
@@ -57,6 +64,11 @@ pub fn start() {
                 input.push_str("_");
                 input_chars.push(c);
                 char_index += 1;
+
+                if char_index == chars.len() as i32 {
+                    break 'running;
+                    // Next sentence
+                }
                 if chars[char_index as usize] == input_chars[char_index as usize] {
                     match_chars.push(true);
                 } else {
@@ -103,10 +115,12 @@ pub fn start() {
             false_count += 1;
         }
     }
+    let duration = Instant::now() - now;
     println!(
-        "Exit: {} / {}",
+        "Exit: {} / {} Time: {}",
         style(true_count).yellow(),
-        style(false_count).red()
+        style(false_count).red(),
+        duration.as_secs()
     );
 
     println!("\x1b[33mThis is colored text.");
