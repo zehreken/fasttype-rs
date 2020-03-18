@@ -16,6 +16,7 @@ fn main() {
 
 struct Round {
     quote: String,
+    input: String,
     chars: Vec<char>,
     input_chars: Vec<char>,
     match_chars: Vec<bool>,
@@ -27,6 +28,7 @@ impl Round {
     fn new() -> Round {
         Round {
             quote: get_random_quote(),
+            input: String::from("_"),
             chars: Vec::new(),
             input_chars: Vec::new(),
             match_chars: Vec::new(),
@@ -79,11 +81,36 @@ fn print_result(now: &Instant, round: &Round) {
     println!("This is {} neat", cyan.reverse().apply_to("quite"));
 }
 
+fn new_round(term: &console::Term, round: &mut Round) {
+    let mut temp_colored_string = String::new();
+    temp_colored_string.push_str(YELLOW);
+    temp_colored_string.push_str(round.quote.as_str());
+    temp_colored_string.push_str(RESET);
+
+    for ch in round.quote.chars() {
+        round.chars.push(ch);
+        //     if index & 4 == 0 {
+        //         temp_colored_string.push_str(RED);
+        //     } else {
+        //         temp_colored_string.push_str(GREEN);
+        //     }
+        //     index += 1;
+    }
+
+    term.write_line(temp_colored_string.as_str())
+        .expect("Error while writing line");
+    term.write_line(&round.input[..])
+        .expect("Error while writing line");
+    term.hide_cursor().expect("Error while hiding cursor");
+}
+
 fn start() {
     let mut now = Instant::now();
-
+    
+    let term = console::Term::stdout();
     let mut round = Round::new();
-
+    new_round(&term, &mut round);
+    /*
     let mut temp_colored_string = String::new();
     temp_colored_string.push_str(YELLOW);
     temp_colored_string.push_str(round.quote.as_str());
@@ -107,14 +134,15 @@ fn start() {
     term.write_line(&input[..])
         .expect("Error while writing line");
     term.hide_cursor().expect("Error while hiding cursor");
+    */
     let mut res;
     'running: loop {
         res = term.read_key();
         match res.unwrap() {
             Key::Char(c) => {
-                input.pop();
-                input.push(c);
-                input.push_str("_");
+                round.input.pop();
+                round.input.push(c);
+                round.input.push_str("_");
                 round.input_chars.push(c);
                 round.char_index += 1;
 
@@ -137,12 +165,13 @@ fn start() {
                     // Next sentence
                     print_result(&now, &round);
                     round = Round::new();
+                    new_round(&term, &mut round);
                 }
             }
             Key::Backspace => {
-                input.pop();
-                input.pop();
-                input.push_str("_");
+                round.input.pop();
+                round.input.pop();
+                round.input.push_str("_");
                 round.input_chars.pop();
                 round.match_chars.pop();
                 if round.char_index >= 0 {
