@@ -14,19 +14,40 @@ fn main() {
     start();
 }
 
-fn new_round() {
-
+struct Round {
+    quote: String,
+    total_keys: u32,
+    wrong_keys: u32,
+    duration: u32,
 }
 
-fn start() {
-    let mut now = Instant::now();
+impl Round {
+    fn new() -> Round {
+        Round {
+            quote: get_random_quote(),
+            total_keys: 0,
+            wrong_keys: 0,
+            duration: 0,
+        }
+    }
+}
 
+fn get_random_quote() -> String {
     let quotes = ["Nothing is so difficult as not deceiving oneself.",
     "Talent is cheaper than table salt. What separates the talented individual from the successful one is a lot of hard work.",
     "The harder you work, the luckier you get.",
     "Don't ignore your dreams; don't work too much; say what you think; cultivate friendships; be happy.",
     "I was an ordinary person who studied hard. There are no miracle people. It happens they get interested in this thing and they learn all this stuff, but they're just people."];
-    let sample_text = quotes[rand::thread_rng().gen_range(0, quotes.len())];
+
+    String::from(quotes[rand::thread_rng().gen_range(0, quotes.len())])
+}
+
+fn start() {
+    let mut now = Instant::now();
+
+    let round = Round::new();
+
+    let sample_text = round.quote.as_str();
     let mut chars: Vec<char> = Vec::new();
     let mut input_chars: Vec<char> = Vec::new();
     let mut match_chars: Vec<bool> = Vec::new();
