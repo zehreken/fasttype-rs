@@ -16,8 +16,10 @@ fn main() {
 
 struct Round {
     quote: String,
-    total_keys: u32,
-    wrong_keys: u32,
+    chars: Vec<char>,
+    input_chars: Vec<char>,
+    match_chars: Vec<bool>,
+    char_index: i32,
     duration: u32,
 }
 
@@ -25,11 +27,20 @@ impl Round {
     fn new() -> Round {
         Round {
             quote: get_random_quote(),
-            total_keys: 0,
-            wrong_keys: 0,
+            chars: Vec::new(),
+            input_chars: Vec::new(),
+            match_chars: Vec::new(),
+            char_index: -1,
             duration: 0,
         }
     }
+}
+
+struct Result {
+    quote: String,
+    total_keys: u32,
+    wrong_keys: u32,
+    duration: u32,
 }
 
 fn get_random_quote() -> String {
@@ -42,23 +53,45 @@ fn get_random_quote() -> String {
     String::from(quotes[rand::thread_rng().gen_range(0, quotes.len())])
 }
 
+fn print_result(now: &Instant, round: &Round) {
+    // Move Round, it is not needed after this anyways
+    let mut true_count = 0;
+    let mut false_count = 0;
+    for b in round.match_chars.clone() {
+        // TODO: Remove this clone
+        if b {
+            true_count += 1;
+        } else {
+            false_count += 1;
+        }
+    }
+    let duration = Instant::now() - *now;
+    println!(
+        "Exit: {} / {} Time: {}",
+        style(true_count).yellow(),
+        style(false_count).red(),
+        duration.as_secs()
+    );
+
+    println!("\x1b[33mThis is colored text.");
+    println!("This is colored text.\x1b[0m");
+    let cyan = Style::new().cyan();
+    println!("This is {} neat", cyan.reverse().apply_to("quite"));
+}
+
 fn start() {
     let mut now = Instant::now();
 
-    let round = Round::new();
-
-    let sample_text = round.quote.as_str();
-    let mut chars: Vec<char> = Vec::new();
-    let mut input_chars: Vec<char> = Vec::new();
-    let mut match_chars: Vec<bool> = Vec::new();
-    let mut char_index: i32 = -1;
+    let mut round = Round::new();
 
     let mut temp_colored_string = String::new();
     temp_colored_string.push_str(YELLOW);
+    temp_colored_string.push_str(round.quote.as_str());
+    temp_colored_string.push_str(RESET);
+
     // let mut index = 0;
-    for ch in sample_text.chars() {
-        chars.push(ch);
-        temp_colored_string.push(ch);
+    for ch in round.quote.chars() {
+        round.chars.push(ch);
         //     if index & 4 == 0 {
         //         temp_colored_string.push_str(RED);
         //     } else {
@@ -66,7 +99,6 @@ fn start() {
         //     }
         //     index += 1;
     }
-    temp_colored_string.push_str(RESET);
 
     let term = console::Term::stdout();
     let mut input = String::from("_");
@@ -83,35 +115,49 @@ fn start() {
                 input.pop();
                 input.push(c);
                 input.push_str("_");
-                input_chars.push(c);
-                char_index += 1;
+                round.input_chars.push(c);
+                round.char_index += 1;
 
-                if char_index == chars.len() as i32 {
+                if round.char_index == round.chars.len() as i32 {
                     break 'running;
                     // Next sentence
                 }
-                if chars[char_index as usize] == input_chars[char_index as usize] {
-                    match_chars.push(true);
+                if round.chars[round.char_index as usize]
+                    == round.input_chars[round.char_index as usize]
+                {
+                    round.match_chars.push(true);
                 } else {
-                    match_chars.push(false);
+                    round.match_chars.push(false);
                 }
             }
             Key::Escape => break 'running,
+            Key::Enter => {
+                if round.char_index + 1 == round.chars.len() as i32 {
+                    // break 'running;
+                    // Next sentence
+                    print_result(&now, &round);
+                    round = Round::new();
+                }
+            }
             Key::Backspace => {
                 input.pop();
                 input.pop();
                 input.push_str("_");
-                input_chars.pop();
-                match_chars.pop();
-                if char_index >= 0 {
-                    char_index -= 1;
+                round.input_chars.pop();
+                round.match_chars.pop();
+                if round.char_index >= 0 {
+                    round.char_index -= 1;
                 }
             }
             _ => {}
         }
 
         let mut input_temp = String::new();
-        let asd: Vec<(&char, &bool)> = input_chars.iter().zip(match_chars.iter()).collect();
+        let asd: Vec<(&char, &bool)> = round
+            .input_chars
+            .iter()
+            .zip(round.match_chars.iter())
+            .collect();
         for (a, b) in asd {
             if *b {
                 input_temp.push_str(GREEN);
@@ -126,26 +172,7 @@ fn start() {
         term.clear_line().expect("Error while clearing line");
         term.write_line(&input_temp[..])
             .expect("Error while writing line");
-    }
-    let mut true_count = 0;
-    let mut false_count = 0;
-    for b in match_chars {
-        if b {
-            true_count += 1;
-        } else {
-            false_count += 1;
-        }
-    }
-    let duration = Instant::now() - now;
-    println!(
-        "Exit: {} / {} Time: {}",
-        style(true_count).yellow(),
-        style(false_count).red(),
-        duration.as_secs()
-    );
+    } // 'running
 
-    println!("\x1b[33mThis is colored text.");
-    println!("This is colored text.\x1b[0m");
-    let cyan = Style::new().cyan();
-    println!("This is {} neat", cyan.reverse().apply_to("quite"));
+    print_result(&now, &round);
 }
