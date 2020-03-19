@@ -228,4 +228,13 @@ fn start() {
     } // 'running
 
     // Print session result here.
+    let mut total_chars = 0;
+    let mut total_duration = 0;
+    for r in results {
+        total_chars += r.quote.len();
+        total_duration += r.duration;
+    }
+
+    let session_wpm = (total_chars as f32 / 5 as f32) / (total_duration as f32 / 60000 as f32);
+    println!("Summary:\nWPM: {}\nAccuracy: {}", session_wpm, 100);
 }
