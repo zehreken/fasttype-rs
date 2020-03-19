@@ -21,7 +21,6 @@ struct Round {
     input_chars: Vec<char>,
     match_chars: Vec<bool>,
     char_index: i32,
-    duration: u32,
 }
 
 impl Round {
@@ -33,7 +32,25 @@ impl Round {
             input_chars: Vec::new(),
             match_chars: Vec::new(),
             char_index: -1,
-            duration: 0,
+        }
+    }
+
+    fn end(&self, duration: u128) -> Result {
+        let mut true_count = 0;
+        let mut false_count = 0;
+        for b in &self.match_chars {
+            if *b {
+                true_count += 1;
+            } else {
+                false_count += 1;
+            }
+        }
+
+        Result {
+            quote: self.quote.clone(),
+            total_keys: true_count + false_count,
+            wrong_keys: false_count,
+            duration: duration,
         }
     }
 }
@@ -42,7 +59,7 @@ struct Result {
     quote: String,
     total_keys: u32,
     wrong_keys: u32,
-    duration: u32,
+    duration: u128,
 }
 
 fn get_random_quote() -> String {
@@ -65,8 +82,17 @@ fn get_random_quote() -> String {
     String::from(quotes[rand::thread_rng().gen_range(0, quotes.len())])
 }
 
-fn print_result(now: &Instant, round: &Round) {
-    // Move Round, it is not needed after this anyways
+fn print_result(result: &Result) {
+    println!(
+        "{} / {} Time: {} || {}",
+        style(result.wrong_keys).yellow(),
+        style(result.total_keys).red(),
+        result.duration,
+        result.quote,
+    );
+}
+
+fn _print_result(now: &Instant, round: &Round) {
     let mut true_count = 0;
     let mut false_count = 0;
     for b in round.match_chars.clone() {
@@ -120,31 +146,9 @@ fn start() {
     let term = console::Term::stdout();
     let mut round = Round::new();
     new_round(&term, &mut round);
-    /*
-    let mut temp_colored_string = String::new();
-    temp_colored_string.push_str(YELLOW);
-    temp_colored_string.push_str(round.quote.as_str());
-    temp_colored_string.push_str(RESET);
 
-    // let mut index = 0;
-    for ch in round.quote.chars() {
-        round.chars.push(ch);
-        //     if index & 4 == 0 {
-        //         temp_colored_string.push_str(RED);
-        //     } else {
-        //         temp_colored_string.push_str(GREEN);
-        //     }
-        //     index += 1;
-    }
+    let mut results: Vec<Result> = vec![];
 
-    let term = console::Term::stdout();
-    let mut input = String::from("_");
-    term.write_line(temp_colored_string.as_str())
-        .expect("Error while writing line");
-    term.write_line(&input[..])
-        .expect("Error while writing line");
-    term.hide_cursor().expect("Error while hiding cursor");
-    */
     let mut res;
     'running: loop {
         res = term.read_key();
@@ -173,7 +177,11 @@ fn start() {
                 if round.char_index + 1 == round.chars.len() as i32 {
                     // break 'running;
                     // Next sentence
-                    print_result(&now, &round);
+                    let duration = (Instant::now() - now).as_millis();
+                    now = Instant::now();
+                    let result = round.end(duration);
+                    print_result(&result);
+                    results.push(result);
                     round = Round::new();
                     new_round(&term, &mut round);
                 }
@@ -213,5 +221,5 @@ fn start() {
             .expect("Error while writing line");
     } // 'running
 
-    print_result(&now, &round);
+    // Print session result here.
 }
