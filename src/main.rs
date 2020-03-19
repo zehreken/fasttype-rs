@@ -20,6 +20,8 @@ struct Round {
     chars: Vec<char>,
     input_chars: Vec<char>,
     match_chars: Vec<bool>,
+    total_keys: u32,
+    wrong_keys: u32,
     char_index: i32,
 }
 
@@ -31,6 +33,8 @@ impl Round {
             chars: Vec::new(),
             input_chars: Vec::new(),
             match_chars: Vec::new(),
+            total_keys: 0,
+            wrong_keys: 0,
             char_index: -1,
         }
     }
@@ -83,8 +87,10 @@ fn get_random_quote() -> String {
 }
 
 fn print_result(result: &Result) {
+    let wpm: f32 = (result.quote.len() as f32 / 5 as f32) / (result.duration as f32 / 60000 as f32);
     println!(
-        "{} / {} Time: {} || {}",
+        "WPM: {} || {} / {} || Time: {} || {}",
+        wpm,
         style(result.wrong_keys).yellow(),
         style(result.total_keys).red(),
         result.duration,
