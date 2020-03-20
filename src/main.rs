@@ -22,7 +22,7 @@ struct Round {
     input_chars: Vec<char>,
     match_chars: Vec<bool>,
     total_keys: u32,
-    wrong_keys: u32,
+    correct_keys: u32,
     char_index: i32,
 }
 
@@ -35,26 +35,16 @@ impl Round {
             input_chars: Vec::new(),
             match_chars: Vec::new(),
             total_keys: 0,
-            wrong_keys: 0,
-            char_index: -1,
+            correct_keys: 0,
+            char_index: 0,
         }
     }
 
     fn end(&self, duration: u128) -> Result {
-        let mut true_count = 0;
-        let mut false_count = 0;
-        for b in &self.match_chars {
-            if *b {
-                true_count += 1;
-            } else {
-                false_count += 1;
-            }
-        }
-
         Result {
             quote: self.quote.clone(),
-            total_keys: true_count + false_count,
-            wrong_keys: false_count,
+            total_keys: self.total_keys,
+            correct_keys: self.correct_keys,
             duration: duration,
         }
     }
@@ -63,21 +53,20 @@ impl Round {
 struct Result {
     quote: String,
     total_keys: u32,
-    wrong_keys: u32,
+    correct_keys: u32,
     duration: u128,
 }
 
 impl fmt::Display for Result {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let wpm: f32 = (self.quote.len() as f32 / 5 as f32) / (self.duration as f32 / 60000 as f32);
+        let accuracy: f32 = self.correct_keys as f32 / self.total_keys as f32 * 100.0;
         write!(
             f,
-            "WPM: {} || {} / {} || Time: {} || {}",
-            wpm,
-            style(self.wrong_keys).yellow(),
-            style(self.total_keys).red(),
-            self.duration,
-            self.quote,
+            "WPM: {:.2} || Accuracy: {:.2} || Time: {}\n",
+            style(wpm).yellow(),
+            style(accuracy).yellow(),
+            style(self.duration).yellow(),
         )
     }
 }
@@ -132,27 +121,27 @@ fn start() {
         res_key = term.read_key();
         match res_key.unwrap() {
             Key::Char(c) => {
-                round.input.pop();
-                round.input.push(c);
-                round.input.push_str("_");
-                round.input_chars.push(c);
-                round.char_index += 1;
+                if round.char_index < round.chars.len() as i32 {
+                    round.input.pop();
+                    round.input.push(c);
+                    round.input.push_str("_");
+                    round.input_chars.push(c);
+                    round.total_keys += 1;
+                    if round.chars[round.char_index as usize]
+                        == round.input_chars[round.char_index as usize]
+                    {
+                        round.match_chars.push(true);
+                        round.correct_keys += 1;
+                    } else {
+                        round.match_chars.push(false);
+                    }
 
-                if round.char_index == round.chars.len() as i32 {
-                    break 'running;
-                    // Next sentence
-                }
-                if round.chars[round.char_index as usize]
-                    == round.input_chars[round.char_index as usize]
-                {
-                    round.match_chars.push(true);
-                } else {
-                    round.match_chars.push(false);
+                    round.char_index += 1;
                 }
             }
             Key::Escape => break 'running,
             Key::Enter => {
-                if round.char_index + 1 == round.chars.len() as i32 {
+                if round.char_index == round.chars.len() as i32 {
                     // break 'running;
                     // Next sentence
                     let duration = (Instant::now() - now).as_millis();
@@ -170,7 +159,7 @@ fn start() {
                 round.input.push_str("_");
                 round.input_chars.pop();
                 round.match_chars.pop();
-                if round.char_index >= 0 {
+                if round.char_index > 0 {
                     round.char_index -= 1;
                 }
             }
@@ -200,13 +189,24 @@ fn start() {
     } // 'running
 
     // Print session result here.
-    let mut total_chars = 0;
-    let mut total_duration = 0;
+    let mut sum_chars = 0;
+    let mut sum_duration = 0;
+    let mut sum_total_keys = 0;
+    let mut sum_correct_keys = 0;
     for r in results {
-        total_chars += r.quote.len();
-        total_duration += r.duration;
+        sum_chars += r.quote.len();
+        sum_duration += r.duration;
+        sum_total_keys += r.total_keys;
+        sum_correct_keys += r.correct_keys;
     }
 
-    let session_wpm = (total_chars as f32 / 5 as f32) / (total_duration as f32 / 60000 as f32);
-    println!("Summary:\nWPM: {}\nAccuracy: {}", session_wpm, 100);
+    let session_wpm = (sum_chars as f32 / 5 as f32) / (sum_duration as f32 / 60000 as f32);
+    let session_accuracy = sum_correct_keys as f32 / sum_total_keys as f32 * 100.0;
+    println!(
+        "{}Session Summary{}\nWPM: {:.2}\nAccuracy: {:.2}%",
+        RED,
+        RESET,
+        style(session_wpm).yellow(),
+        style(session_accuracy).yellow()
+    );
 }
