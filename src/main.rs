@@ -1,6 +1,5 @@
 use console::style;
 use console::Key;
-use console::Style;
 use rand::Rng;
 use std::fmt;
 use std::time::Instant;
@@ -61,12 +60,13 @@ impl fmt::Display for Result {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let wpm: f32 = (self.quote.len() as f32 / 5 as f32) / (self.duration as f32 / 60000 as f32);
         let accuracy: f32 = self.correct_keys as f32 / self.total_keys as f32 * 100.0;
+        let time_in_seconds: f32 = self.duration as f32 / 1000.0;
         write!(
             f,
-            "WPM: {:.2} || Accuracy: {:.2} || Time: {}\n",
+            "WPM: {:.2} || Accuracy: {:.2}% || Time(s): {:.2}\n",
             style(wpm).yellow(),
             style(accuracy).yellow(),
-            style(self.duration).yellow(),
+            style(time_in_seconds).yellow(),
         )
     }
 }
