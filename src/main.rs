@@ -102,48 +102,17 @@ fn get_random_quote() -> String {
     String::from(quotes[rand::thread_rng().gen_range(0, quotes.len())])
 }
 
-fn _print_result(now: &Instant, round: &Round) {
-    let mut true_count = 0;
-    let mut false_count = 0;
-    for b in round.match_chars.clone() {
-        // TODO: Remove this clone
-        if b {
-            true_count += 1;
-        } else {
-            false_count += 1;
-        }
-    }
-    let duration = Instant::now() - *now;
-    println!(
-        "Exit: {} / {} Time: {}",
-        style(true_count).yellow(),
-        style(false_count).red(),
-        duration.as_secs()
-    );
-
-    println!("\x1b[33mThis is colored text.");
-    println!("This is colored text.\x1b[0m");
-    let cyan = Style::new().cyan();
-    println!("This is {} neat", cyan.reverse().apply_to("quite"));
-}
-
 fn new_round(term: &console::Term, round: &mut Round) {
-    let mut temp_colored_string = String::new();
-    temp_colored_string.push_str(YELLOW);
-    temp_colored_string.push_str(round.quote.as_str());
-    temp_colored_string.push_str(RESET);
+    let mut colored_quote = String::new();
+    colored_quote.push_str(YELLOW);
+    colored_quote.push_str(round.quote.as_str());
+    colored_quote.push_str(RESET);
 
     for ch in round.quote.chars() {
         round.chars.push(ch);
-        //     if index & 4 == 0 {
-        //         temp_colored_string.push_str(RED);
-        //     } else {
-        //         temp_colored_string.push_str(GREEN);
-        //     }
-        //     index += 1;
     }
 
-    term.write_line(temp_colored_string.as_str())
+    term.write_line(colored_quote.as_str())
         .expect("Error while writing line");
     term.write_line(&round.input[..])
         .expect("Error while writing line");
@@ -152,17 +121,16 @@ fn new_round(term: &console::Term, round: &mut Round) {
 
 fn start() {
     let mut now = Instant::now();
-
     let term = console::Term::stdout();
+    let mut results: Vec<Result> = vec![];
+
     let mut round = Round::new();
     new_round(&term, &mut round);
 
-    let mut results: Vec<Result> = vec![];
-
-    let mut res;
+    let mut res_key;
     'running: loop {
-        res = term.read_key();
-        match res.unwrap() {
+        res_key = term.read_key();
+        match res_key.unwrap() {
             Key::Char(c) => {
                 round.input.pop();
                 round.input.push(c);
