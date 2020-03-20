@@ -2,7 +2,8 @@ use console::style;
 use console::Key;
 use console::Style;
 use rand::Rng;
-use std::time::{Duration, Instant};
+use std::fmt;
+use std::time::Instant;
 
 const RESET: &str = "\x1b[0m";
 const RED: &str = "\x1b[0;41m";
@@ -66,6 +67,21 @@ struct Result {
     duration: u128,
 }
 
+impl fmt::Display for Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let wpm: f32 = (self.quote.len() as f32 / 5 as f32) / (self.duration as f32 / 60000 as f32);
+        write!(
+            f,
+            "WPM: {} || {} / {} || Time: {} || {}",
+            wpm,
+            style(self.wrong_keys).yellow(),
+            style(self.total_keys).red(),
+            self.duration,
+            self.quote,
+        )
+    }
+}
+
 fn get_random_quote() -> String {
     let quotes = ["Nothing is so difficult as not deceiving oneself.",
     "Talent is cheaper than table salt. What separates the talented individual from the successful one is a lot of hard work.",
@@ -84,18 +100,6 @@ fn get_random_quote() -> String {
     "One of the most beautiful qualities of true friendship is to understand and to be understood."];
 
     String::from(quotes[rand::thread_rng().gen_range(0, quotes.len())])
-}
-
-fn print_result(result: &Result) {
-    let wpm: f32 = (result.quote.len() as f32 / 5 as f32) / (result.duration as f32 / 60000 as f32);
-    println!(
-        "WPM: {} || {} / {} || Time: {} || {}",
-        wpm,
-        style(result.wrong_keys).yellow(),
-        style(result.total_keys).red(),
-        result.duration,
-        result.quote,
-    );
 }
 
 fn _print_result(now: &Instant, round: &Round) {
@@ -186,7 +190,7 @@ fn start() {
                     let duration = (Instant::now() - now).as_millis();
                     now = Instant::now();
                     let result = round.end(duration);
-                    print_result(&result);
+                    println!("{}", result);
                     results.push(result);
                     round = Round::new();
                     new_round(&term, &mut round);
