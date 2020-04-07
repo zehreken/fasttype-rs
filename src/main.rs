@@ -10,7 +10,6 @@ const GREEN: &str = "\x1b[0;32m";
 const YELLOW: &str = "\x1b[0;33m";
 
 fn main() {
-    println!("Hello, world!");
     start();
 }
 
