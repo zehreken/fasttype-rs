@@ -208,4 +208,5 @@ fn start() {
         style(session_wpm).yellow(),
         style(session_accuracy).yellow()
     );
+    term.show_cursor().expect("Error while showing cursor");
 }
