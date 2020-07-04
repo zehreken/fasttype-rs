@@ -15,7 +15,6 @@ fn main() {
 
 struct Round {
     quote: String,
-    input: String,
     chars: Vec<char>,
     input_chars: Vec<char>,
     match_chars: Vec<bool>,
@@ -28,7 +27,6 @@ impl Round {
     fn new() -> Round {
         Round {
             quote: get_random_quote(),
-            input: String::from("_"),
             chars: Vec::new(),
             input_chars: Vec::new(),
             match_chars: Vec::new(),
@@ -103,8 +101,7 @@ fn new_round(term: &console::Term, round: &mut Round) {
 
     term.write_line(colored_quote.as_str())
         .expect("Error while writing line");
-    term.write_line(&round.input[..])
-        .expect("Error while writing line");
+    term.write_line("_").unwrap();
     term.hide_cursor().expect("Error while hiding cursor");
 }
 
@@ -125,12 +122,9 @@ fn start() {
         match res_key.unwrap() {
             Key::Char(c) => {
                 if round.char_index < round.chars.len() as i32 {
-                    if round.input.len() == 1 {
+                    if round.input_chars.len() == 0 {
                         now = Instant::now();
                     }
-                    round.input.pop();
-                    round.input.push(c);
-                    round.input.push_str("_");
                     round.input_chars.push(c);
                     round.total_keys += 1;
                     if round.chars[round.char_index as usize]
@@ -159,9 +153,6 @@ fn start() {
                 }
             }
             Key::Backspace => {
-                round.input.pop();
-                round.input.pop();
-                round.input.push_str("_");
                 round.input_chars.pop();
                 round.match_chars.pop();
                 if round.char_index > 0 {
