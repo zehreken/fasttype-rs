@@ -113,6 +113,9 @@ fn start() {
     let term = console::Term::stdout();
     let mut results: Vec<Result> = vec![];
 
+    term.clear_screen()
+        .expect("Error while clearing the screen");
+
     let mut round = Round::new();
     new_round(&term, &mut round);
 
@@ -142,7 +145,6 @@ fn start() {
             Key::Escape => break 'running,
             Key::Enter => {
                 if round.char_index == round.chars.len() as i32 {
-                    // break 'running;
                     // Next sentence
                     let duration = (Instant::now() - now).as_millis();
                     now = Instant::now();
@@ -181,6 +183,7 @@ fn start() {
             input_temp.push(*a);
         }
         input_temp.push_str(RESET);
+        input_temp.push('_');
         term.move_cursor_up(1)
             .expect("Error while moving cursor up");
         term.clear_line().expect("Error while clearing line");
