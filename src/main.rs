@@ -43,7 +43,7 @@ impl Round {
             quote: self.quote.clone(),
             total_keys: self.total_keys,
             correct_keys: self.correct_keys,
-            duration: duration,
+            duration,
         }
     }
 }
@@ -125,6 +125,9 @@ fn start() {
         match res_key.unwrap() {
             Key::Char(c) => {
                 if round.char_index < round.chars.len() as i32 {
+                    if round.input.len() == 1 {
+                        now = Instant::now();
+                    }
                     round.input.pop();
                     round.input.push(c);
                     round.input.push_str("_");
@@ -147,7 +150,7 @@ fn start() {
                 if round.char_index == round.chars.len() as i32 {
                     // Next sentence
                     let duration = (Instant::now() - now).as_millis();
-                    now = Instant::now();
+                    now = Instant::now(); // Reset now
                     let result = round.end(duration);
                     println!("{}", result);
                     results.push(result);
@@ -206,7 +209,7 @@ fn start() {
     let session_wpm = (sum_chars as f32 / 5 as f32) / (sum_duration as f32 / 60000 as f32);
     let session_accuracy = sum_correct_keys as f32 / sum_total_keys as f32 * 100.0;
     println!(
-        "{}Session Summary{}\nWPM: {:.2}\nAccuracy: {:.2}%",
+        "{}SESSION SUMMARY{}\nWPM: {:.2}\nAccuracy: {:.2}%",
         RED,
         RESET,
         style(session_wpm).yellow(),
