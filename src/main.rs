@@ -85,8 +85,8 @@ fn get_random_quote() -> String {
     "Sometimes even to live is an act of courage.",
     "All cruelty springs from weakness.",
     "Wherever there is a human being, there is an opportunity for a kindness.",
-    "One of the most beautiful qualities of true friendship is to understand and to be understood."];
-    "Practice does not make perfect. Only perfect practice makes perfect."
+    "One of the most beautiful qualities of true friendship is to understand and to be understood.",
+    "Practice does not make perfect. Only perfect practice makes perfect."];
 
     String::from(quotes[rand::thread_rng().gen_range(0, quotes.len())])
 }
