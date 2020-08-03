@@ -1,4 +1,4 @@
-use super::quotes;
+use super::quotes::*;
 use console::style;
 use fmt::Display;
 use std::fmt;
@@ -14,9 +14,9 @@ pub struct Round {
 }
 
 impl Round {
-    pub fn new() -> Self {
+    pub fn new(quote_manager: &QuoteManager) -> Self {
         Self {
-            quote: quotes::get_random_quote(),
+            quote: quote_manager.get_random_quote(),
             chars: Vec::new(),
             input_chars: Vec::new(),
             match_chars: Vec::new(),

@@ -10,6 +10,7 @@ const RESET: &str = "\x1b[0m";
 const RED: &str = "\x1b[0;41m";
 const GREEN: &str = "\x1b[0;32m";
 const YELLOW: &str = "\x1b[0;33m";
+const CURSOR: char = '_';
 
 fn main() {
     start();
@@ -27,19 +28,20 @@ fn new_round(term: &console::Term, round: &mut Round) {
 
     term.write_line(colored_quote.as_str())
         .expect("Error while writing line");
-    term.write_line("_").unwrap();
+    term.write_line(&CURSOR.to_string()[..]).unwrap();
     term.hide_cursor().expect("Error while hiding cursor");
 }
 
 fn start() {
     let mut now = Instant::now();
     let term = console::Term::stdout();
+    let quote_manager = quotes::QuoteManager::new();
     let mut results: Vec<RoundResult> = vec![];
 
     term.clear_screen()
         .expect("Error while clearing the screen");
 
-    let mut round = Round::new();
+    let mut round = Round::new(&quote_manager);
     new_round(&term, &mut round);
 
     let mut res_key;
@@ -49,7 +51,7 @@ fn start() {
             Key::Char(c) => {
                 if round.char_index < round.chars.len() as i32 {
                     if round.input_chars.len() == 0 {
-                        now = Instant::now();
+                        now = Instant::now(); // Start time after the first key stroke
                     }
                     round.input_chars.push(c);
                     round.total_keys += 1;
@@ -74,7 +76,7 @@ fn start() {
                     let result = round.end(duration);
                     println!("{}", result);
                     results.push(result);
-                    round = Round::new();
+                    round = Round::new(&quote_manager);
                     new_round(&term, &mut round);
                 }
             }
@@ -103,7 +105,7 @@ fn start() {
             input_temp.push(*a);
         }
         input_temp.push_str(RESET);
-        input_temp.push('_');
+        input_temp.push(CURSOR);
         term.move_cursor_up(1)
             .expect("Error while moving cursor up");
         term.clear_line().expect("Error while clearing line");
@@ -111,7 +113,10 @@ fn start() {
             .expect("Error while writing line");
     } // 'running
 
-    // Print session result here.
+    print_session_result(&term, results);
+}
+
+fn print_session_result(term: &console::Term, results: Vec<RoundResult>) {
     let mut sum_chars = 0;
     let mut sum_duration = 0;
     let mut sum_total_keys = 0;
