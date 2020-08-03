@@ -8,4 +8,5 @@ You can also install the binary and run anywhere in your terminal by doing
 ```cargo install --path .```
 
 WPM calculation is based on https://en.wikipedia.org/wiki/Words_per_minute
-![type](fasttype-rs.gif)
+
+![fasttype-rs](fasttype-rs.gif)
