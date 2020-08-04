@@ -1,5 +1,5 @@
 # fasttype-rs
-A small program for typing practice in the comfort of your terminal.
+A small program to practice typing in the comfort of your terminal.
 Calculates WPM and accuracy per session.
 
 Clone the repo and do ```cargo run --release```, enjoy.
