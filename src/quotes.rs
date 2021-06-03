@@ -16,6 +16,6 @@ impl QuoteManager {
     }
 
     pub fn get_random_quote(&self) -> String {
-        String::from(self.quotes[rand::thread_rng().gen_range(0, self.quotes.len())].clone())
+        String::from(self.quotes[rand::thread_rng().gen_range(0..self.quotes.len())].clone())
     }
 }
