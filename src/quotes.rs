@@ -1,9 +1,11 @@
+use rand::prelude::ThreadRng;
 use rand::Rng;
 use std::fs::File;
 use std::io::prelude::*;
 
 pub struct QuoteManager {
     quotes: Vec<String>,
+    rnd: ThreadRng,
 }
 
 impl QuoteManager {
@@ -12,10 +14,12 @@ impl QuoteManager {
         let mut contents = String::new();
         file.read_to_string(&mut contents).unwrap();
         let quotes: Vec<String> = contents.lines().map(|q| q.to_owned()).collect();
-        Self { quotes }
+
+        let rnd = rand::thread_rng();
+        Self { quotes, rnd }
     }
 
-    pub fn get_random_quote(&self) -> String {
-        String::from(self.quotes[rand::thread_rng().gen_range(0..self.quotes.len())].clone())
+    pub fn get_random_quote(&mut self) -> String {
+        String::from(self.quotes[self.rnd.gen_range(0..self.quotes.len())].clone())
     }
 }

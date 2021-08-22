@@ -35,13 +35,13 @@ fn new_round(term: &console::Term, round: &mut Round) {
 fn start() {
     let mut now = Instant::now();
     let term = console::Term::stdout();
-    let quote_manager = quotes::QuoteManager::new();
+    let mut quote_manager = quotes::QuoteManager::new();
     let mut results: Vec<RoundResult> = vec![];
 
     term.clear_screen()
         .expect("Error while clearing the screen");
 
-    let mut round = Round::new(&quote_manager);
+    let mut round = Round::new(&mut quote_manager);
     new_round(&term, &mut round);
 
     let mut res_key;
@@ -76,7 +76,7 @@ fn start() {
                     let result = round.end(duration);
                     println!("{}", result);
                     results.push(result);
-                    round = Round::new(&quote_manager);
+                    round = Round::new(&mut quote_manager);
                     new_round(&term, &mut round);
                 }
             }

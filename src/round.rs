@@ -14,7 +14,7 @@ pub struct Round {
 }
 
 impl Round {
-    pub fn new(quote_manager: &QuoteManager) -> Self {
+    pub fn new(quote_manager: &mut QuoteManager) -> Self {
         Self {
             quote: quote_manager.get_random_quote(),
             chars: Vec::new(),
