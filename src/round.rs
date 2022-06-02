@@ -45,12 +45,12 @@ pub struct RoundResult {
 
 impl Display for RoundResult {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let wpm: f32 = (self.quote.len() as f32 / 5 as f32) / (self.duration as f32 / 60000 as f32);
+        let wpm: f32 = (self.quote.len() as f32 / 5_f32) / (self.duration as f32 / 60000_f32);
         let accuracy: f32 = self.correct_keys as f32 / self.total_keys as f32 * 100.0;
         let time_in_seconds: f32 = self.duration as f32 / 1000.0;
-        write!(
+        writeln!(
             f,
-            "WPM: {:.2} || Accuracy: {:.2}% || Time(s): {:.2}\n",
+            "WPM: {:.2} || Accuracy: {:.2}% || Time(s): {:.2}",
             style(wpm).yellow(),
             style(accuracy).yellow(),
             style(time_in_seconds).yellow(),

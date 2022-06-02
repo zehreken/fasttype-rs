@@ -50,7 +50,7 @@ fn start() {
         match res_key.unwrap() {
             Key::Char(c) => {
                 if round.char_index < round.chars.len() as i32 {
-                    if round.input_chars.len() == 0 {
+                    if round.input_chars.is_empty() {
                         now = Instant::now(); // Start time after the first key stroke
                     }
                     round.input_chars.push(c);
@@ -128,7 +128,7 @@ fn print_session_result(term: &console::Term, results: Vec<RoundResult>) {
         sum_correct_keys += r.correct_keys;
     }
 
-    let session_wpm = (sum_chars as f32 / 5 as f32) / (sum_duration as f32 / 60000 as f32);
+    let session_wpm = (sum_chars as f32 / 5_f32) / (sum_duration as f32 / 60000_f32);
     let session_accuracy = sum_correct_keys as f32 / sum_total_keys as f32 * 100.0;
     println!(
         "{}SESSION SUMMARY{}\nWPM: {:.2}\nAccuracy: {:.2}%",

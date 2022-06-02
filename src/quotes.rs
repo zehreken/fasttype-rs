@@ -5,6 +5,7 @@ use std::io::prelude::*;
 
 pub struct QuoteManager {
     quotes: Vec<String>,
+    previous_index: usize,
     rnd: ThreadRng,
 }
 
@@ -15,11 +16,21 @@ impl QuoteManager {
         file.read_to_string(&mut contents).unwrap();
         let quotes: Vec<String> = contents.lines().map(|q| q.to_owned()).collect();
 
-        let rnd = rand::thread_rng();
-        Self { quotes, rnd }
+        let mut rnd = rand::thread_rng();
+        Self {
+            quotes,
+            previous_index: rnd.gen_range(0..10),
+            rnd,
+        }
     }
 
     pub fn get_random_quote(&mut self) -> String {
-        String::from(self.quotes[self.rnd.gen_range(0..self.quotes.len())].clone())
+        let mut new_index = self.rnd.gen_range(0..self.quotes.len());
+        if new_index == self.previous_index {
+            new_index += 1;
+            new_index %= self.quotes.len();
+        }
+        self.previous_index = new_index;
+        self.quotes[new_index].clone()
     }
 }
